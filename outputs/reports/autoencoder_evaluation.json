@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-09-04T05:51:18.653638+00:00",
+  "predictions_file": "D:\\SOC_Copilot_Phase1_Module3\\outputs\\reports\\autoencoder_predictions.csv",
+  "features_file": "D:\\SOC_Copilot_Phase1_Module3\\data\\processed\\features.csv",
+  "total_predicted_blocks": 575061,
+  "unmatched_prediction_blocks": 0,
+  "labeled_normal_blocks": 558223,
+  "training_blocks_excluded": 446578,
+  "holdout_normal_blocks": 111645,
+  "anomaly_blocks": 16838,
+  "evaluated_blocks": 128483,
+  "accuracy": 0.973763,
+  "precision": 0.833193,
+  "recall": 1.0,
+  "f1_score": 0.909007,
+  "roc_auc": 0.999772,
+  "pr_auc": 0.997927,
+  "confusion_matrix": [
+    [
+      108274,
+      3371
+    ],
+    [
+      0,
+      16838
+    ]
+  ],
+  "confusion_matrix_labels": [
+    "Normal",
+    "Anomaly"
+  ],
+  "elapsed_seconds": 5.45,
+  "warnings": []
+}

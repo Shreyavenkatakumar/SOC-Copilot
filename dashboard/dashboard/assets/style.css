@@ -1,0 +1,100 @@
+/* SOC Copilot -- dark cybersecurity/SOC visual theme */
+
+.stApp {
+    background-color: #0b0f19;
+    color: #d7dde5;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #0e1420;
+    border-right: 1px solid #1c2434;
+}
+
+h1, h2, h3, h4 {
+    color: #e8ecf3;
+    font-family: 'Segoe UI', 'Inter', sans-serif;
+    letter-spacing: 0.01em;
+}
+
+.soc-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #4dd4ac;
+    letter-spacing: 0.08em;
+    margin-bottom: 0;
+}
+
+.soc-subtitle {
+    font-size: 0.78rem;
+    color: #6b7484;
+    letter-spacing: 0.05em;
+    margin-top: -6px;
+}
+
+.kpi-card {
+    background: linear-gradient(180deg, #131b2c 0%, #0f1622 100%);
+    border: 1px solid #1c2434;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 8px;
+}
+
+.kpi-label {
+    font-size: 0.72rem;
+    color: #8a94a6;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #e8ecf3;
+}
+
+.kpi-value.critical { color: #ff3b5c; }
+.kpi-value.good { color: #4dd4ac; }
+.kpi-value.warn { color: #ffd23f; }
+
+.section-header {
+    border-left: 3px solid #4dd4ac;
+    padding-left: 10px;
+    margin: 18px 0 10px 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #e8ecf3;
+}
+
+.evidence-box {
+    background-color: #10192a;
+    border: 1px solid #1c2434;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #c3ccd9;
+}
+
+.pipeline-step {
+    background-color: #10192a;
+    border: 1px solid #1c2434;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #c3ccd9;
+}
+
+.warning-banner {
+    background-color: #2a1a10;
+    border: 1px solid #7a4a1c;
+    color: #ffb066;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    margin-bottom: 10px;
+}
+
+.stDataFrame { border: 1px solid #1c2434; border-radius: 8px; }

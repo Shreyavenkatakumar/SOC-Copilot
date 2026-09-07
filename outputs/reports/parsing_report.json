@@ -1,0 +1,115 @@
+{
+  "generated_at": "2026-09-04T05:45:10.770906+00:00",
+  "input_file": "D:\\SOC_Copilot_Phase1_Module3\\data\\raw\\HDFS.log",
+  "output_file": "D:\\SOC_Copilot_Phase1_Module3\\data\\processed\\parsed_logs.csv",
+  "drain3_state_file": "D:\\SOC_Copilot_Phase1_Module3\\outputs\\models\\drain3_state.bin",
+  "total_lines_read": 11175629,
+  "total_lines_parsed": 11175629,
+  "total_lines_failed": 0,
+  "parsing_success_rate": 1.0,
+  "unique_template_count": 48,
+  "most_frequent_templates": [
+    {
+      "event_id": "E1",
+      "template": "Receiving block <BlockId> src: /<IP PORT> dest: /<IP PORT>",
+      "occurrence_count": 1723232
+    },
+    {
+      "event_id": "E5",
+      "template": "BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP PORT> is added to <BlockId> size <*>",
+      "occurrence_count": 1719741
+    },
+    {
+      "event_id": "E3",
+      "template": "PacketResponder <*> for block <BlockId> <*>",
+      "occurrence_count": 1706728
+    },
+    {
+      "event_id": "E4",
+      "template": "Received block <BlockId> of size <*> from /<IP>",
+      "occurrence_count": 1706514
+    },
+    {
+      "event_id": "E19",
+      "template": "Deleting block <BlockId> file <*>",
+      "occurrence_count": 1402047
+    },
+    {
+      "event_id": "E35",
+      "template": "BLOCK* NameSystem.delete: <BlockId> is added to invalidSet of <IP PORT>",
+      "occurrence_count": 1396174
+    },
+    {
+      "event_id": "E12",
+      "template": "BLOCK* NameSystem.allocateBlock: <*> temporary/ task <*> <*> <*> <*> <*> <BlockId>",
+      "occurrence_count": 574940
+    },
+    {
+      "event_id": "E10",
+      "template": "<IP PORT> Served block <BlockId> to /<IP>",
+      "occurrence_count": 428726
+    },
+    {
+      "event_id": "E38",
+      "template": "<IP PORT>:Got exception while serving <BlockId> to /<IP>:",
+      "occurrence_count": 356207
+    },
+    {
+      "event_id": "E15",
+      "template": "Verification succeeded for <BlockId>",
+      "occurrence_count": 120036
+    },
+    {
+      "event_id": "E6",
+      "template": "Received block <BlockId> src: /<IP PORT> dest: /<IP PORT> of size <*>",
+      "occurrence_count": 7097
+    },
+    {
+      "event_id": "E7",
+      "template": "<IP PORT>:Transmitted block <BlockId> to /<IP PORT>",
+      "occurrence_count": 6937
+    },
+    {
+      "event_id": "E13",
+      "template": "BLOCK* ask <IP PORT> to replicate <BlockId> to datanode(s) <IP PORT>",
+      "occurrence_count": 6837
+    },
+    {
+      "event_id": "E14",
+      "template": "<IP PORT> Starting thread to transfer block <BlockId> to <IP PORT>",
+      "occurrence_count": 6837
+    },
+    {
+      "event_id": "E36",
+      "template": "Unexpected error trying to delete block <BlockId>. BlockInfo not found in volumeMap.",
+      "occurrence_count": 5545
+    },
+    {
+      "event_id": "E18",
+      "template": "writeBlock <BlockId> received exception java.io.IOException: Could not read from stream",
+      "occurrence_count": 3226
+    },
+    {
+      "event_id": "E20",
+      "template": "Receiving empty packet for block <BlockId>",
+      "occurrence_count": 1464
+    },
+    {
+      "event_id": "E37",
+      "template": "BLOCK* NameSystem.addStoredBlock: addStoredBlock request received for <BlockId> on <IP PORT> size <*> But it does not belong to any file.",
+      "occurrence_count": 1288
+    },
+    {
+      "event_id": "E24",
+      "template": "BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BlockId> on <IP PORT> size <*>",
+      "occurrence_count": 975
+    },
+    {
+      "event_id": "E8",
+      "template": "<IP PORT> Starting thread to transfer block <BlockId> to <IP PORT>, <IP PORT>",
+      "occurrence_count": 165
+    }
+  ],
+  "elapsed_seconds": 798.52,
+  "warnings": []
+}

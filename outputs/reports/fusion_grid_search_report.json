@@ -1,0 +1,67 @@
+{
+  "generated_at": "2026-08-26T09:04:14.820948+00:00",
+  "optimization_beta": 1.0,
+  "weight_grid": [
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7
+  ],
+  "validation_split_ratio": 0.5,
+  "validation_blocks": 64241,
+  "validation_normal_blocks": 55822,
+  "validation_anomaly_blocks": 8419,
+  "grid_results": [
+    {
+      "isolation_forest_weight": 0.3,
+      "autoencoder_weight": 0.7,
+      "best_threshold": 0.240447,
+      "precision": 0.919077,
+      "recall": 0.558499,
+      "f1_score": 0.694791,
+      "fbeta_score": 0.694791
+    },
+    {
+      "isolation_forest_weight": 0.4,
+      "autoencoder_weight": 0.6,
+      "best_threshold": 0.218481,
+      "precision": 0.703534,
+      "recall": 0.676209,
+      "f1_score": 0.689601,
+      "fbeta_score": 0.689601
+    },
+    {
+      "isolation_forest_weight": 0.5,
+      "autoencoder_weight": 0.5,
+      "best_threshold": 0.265842,
+      "precision": 0.680722,
+      "recall": 0.680722,
+      "f1_score": 0.680722,
+      "fbeta_score": 0.680722
+    },
+    {
+      "isolation_forest_weight": 0.6,
+      "autoencoder_weight": 0.4,
+      "best_threshold": 0.32772,
+      "precision": 0.695172,
+      "recall": 0.64984,
+      "f1_score": 0.671742,
+      "fbeta_score": 0.671742
+    },
+    {
+      "isolation_forest_weight": 0.7,
+      "autoencoder_weight": 0.3,
+      "best_threshold": 0.368967,
+      "precision": 0.670591,
+      "recall": 0.663024,
+      "f1_score": 0.666786,
+      "fbeta_score": 0.666786
+    }
+  ],
+  "chosen_isolation_forest_weight": 0.3,
+  "chosen_autoencoder_weight": 0.7,
+  "chosen_threshold": 0.240447,
+  "chosen_fbeta_score": 0.694791,
+  "elapsed_seconds": 6.71
+}

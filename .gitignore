@@ -1,0 +1,22 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.vscode/
+.idea/
+*.log
+*.tmp
+*.bak
+.streamlit/secrets.toml
+# Dashboard cache
+dashboard/.cache/
+
+# Large generated datasets
+data/processed/features.csv
+data/processed/parsed_logs.csv
+data/raw/Event_traces.csv
+data/raw/Event_occurrence_matrix.csv
+data/raw/HDFS.npz
+
+# Large model artifacts
+outputs/models/*.joblib

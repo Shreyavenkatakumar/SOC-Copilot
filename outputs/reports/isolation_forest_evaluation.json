@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-08-26T09:01:36.558252+00:00",
+  "predictions_file": "D:\\SOC_Copilot_Phase1_Module3\\outputs\\reports\\isolation_forest_predictions.csv",
+  "features_file": "D:\\SOC_Copilot_Phase1_Module3\\data\\processed\\features.csv",
+  "total_predicted_blocks": 575061,
+  "unmatched_prediction_blocks": 0,
+  "labeled_normal_blocks": 558223,
+  "training_blocks_excluded": 446578,
+  "holdout_normal_blocks": 111645,
+  "anomaly_blocks": 16838,
+  "evaluated_blocks": 128483,
+  "accuracy": 0.768296,
+  "precision": 0.336246,
+  "recall": 0.788514,
+  "f1_score": 0.471451,
+  "roc_auc": 0.881932,
+  "confusion_matrix": [
+    [
+      85436,
+      26209
+    ],
+    [
+      3561,
+      13277
+    ]
+  ],
+  "confusion_matrix_labels": [
+    "Normal",
+    "Anomaly"
+  ],
+  "calibrated_threshold": 0.496148,
+  "calibrated_accuracy": 0.884358,
+  "calibrated_precision": 0.552964,
+  "calibrated_recall": 0.61385,
+  "calibrated_f1_score": 0.581818,
+  "calibrated_confusion_matrix": [
+    [
+      103289,
+      8356
+    ],
+    [
+      6502,
+      10336
+    ]
+  ],
+  "elapsed_seconds": 4.01,
+  "warnings": []
+}
