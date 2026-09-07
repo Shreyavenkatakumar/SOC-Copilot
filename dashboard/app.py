@@ -143,14 +143,14 @@ def page_soc_overview() -> None:
         )
         return
 
-    summary = dl.get_dataset_summary()
-    total = summary.get("total_blocks") or len(master_df)
-    normal = summary.get("normal_blocks")
-    anomaly = summary.get("anomaly_blocks")
-    if normal is None or anomaly is None:
-        normal = int((master_df["Label"] == "Normal").sum()) if "Label" in master_df else None
-        anomaly = int((master_df["Label"] == "Anomaly").sum()) if "Label" in master_df else None
-    anomaly_rate = (anomaly / total * 100) if (anomaly is not None and total) else None
+    # SOC Overview KPIs reflect the trained model's actual scored output
+    # (fusion_predictions.csv via master_df), NOT ground-truth labels.
+    # This keeps Normal/Anomalous counts consistent with the severity bar,
+    # pie chart, and Alerts queue, which all read from fusion_prediction.
+    total = len(master_df)
+    normal = int((master_df["fusion_prediction"] == "Normal").sum())
+    anomaly = int((master_df["fusion_prediction"] == "Anomaly").sum())
+    anomaly_rate = (anomaly / total * 100) if total else None
 
     critical_count = int((master_df["severity"] == "CRITICAL").sum())
     high_count = int((master_df["severity"] == "HIGH").sum())
