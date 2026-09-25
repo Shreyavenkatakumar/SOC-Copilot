@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-04T05:45:10.770906+00:00",
-  "input_file": "D:\\SOC_Copilot_Phase1_Module3\\data\\raw\\HDFS.log",
-  "output_file": "D:\\SOC_Copilot_Phase1_Module3\\data\\processed\\parsed_logs.csv",
-  "drain3_state_file": "D:\\SOC_Copilot_Phase1_Module3\\outputs\\models\\drain3_state.bin",
+  "generated_at": "2026-09-07T11:56:03.737934+00:00",
+  "input_file": "C:\\Users\\aadam\\Downloads\\Vilashini_Final_Year_Project\\SOC-Copilot\\data\\raw\\HDFS.log",
+  "output_file": "C:\\Users\\aadam\\Downloads\\Vilashini_Final_Year_Project\\SOC-Copilot\\data\\processed\\parsed_logs.csv",
+  "drain3_state_file": "C:\\Users\\aadam\\Downloads\\Vilashini_Final_Year_Project\\SOC-Copilot\\outputs\\models\\drain3_state.bin",
   "total_lines_read": 11175629,
   "total_lines_parsed": 11175629,
   "total_lines_failed": 0,
@@ -110,6 +110,6 @@
       "occurrence_count": 165
     }
   ],
-  "elapsed_seconds": 798.52,
+  "elapsed_seconds": 972.87,
   "warnings": []
 }

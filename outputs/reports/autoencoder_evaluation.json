@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-04T05:51:18.653638+00:00",
-  "predictions_file": "D:\\SOC_Copilot_Phase1_Module3\\outputs\\reports\\autoencoder_predictions.csv",
-  "features_file": "D:\\SOC_Copilot_Phase1_Module3\\data\\processed\\features.csv",
+  "generated_at": "2026-09-07T12:06:42.302657+00:00",
+  "predictions_file": "C:\\Users\\aadam\\Downloads\\Vilashini_Final_Year_Project\\SOC-Copilot\\outputs\\reports\\autoencoder_predictions.csv",
+  "features_file": "C:\\Users\\aadam\\Downloads\\Vilashini_Final_Year_Project\\SOC-Copilot\\data\\processed\\features.csv",
   "total_predicted_blocks": 575061,
   "unmatched_prediction_blocks": 0,
   "labeled_normal_blocks": 558223,
@@ -9,16 +9,16 @@
   "holdout_normal_blocks": 111645,
   "anomaly_blocks": 16838,
   "evaluated_blocks": 128483,
-  "accuracy": 0.973763,
-  "precision": 0.833193,
+  "accuracy": 0.973856,
+  "precision": 0.833688,
   "recall": 1.0,
-  "f1_score": 0.909007,
-  "roc_auc": 0.999772,
-  "pr_auc": 0.997927,
+  "f1_score": 0.909302,
+  "roc_auc": 0.999823,
+  "pr_auc": 0.997887,
   "confusion_matrix": [
     [
-      108274,
-      3371
+      108286,
+      3359
     ],
     [
       0,
@@ -29,6 +29,6 @@
     "Normal",
     "Anomaly"
   ],
-  "elapsed_seconds": 5.45,
+  "elapsed_seconds": 8.08,
   "warnings": []
 }

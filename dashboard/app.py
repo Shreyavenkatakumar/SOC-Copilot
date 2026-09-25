@@ -50,8 +50,6 @@ def load_css() -> None:
 load_css()
 
 PRODUCTION_THRESHOLD = 0.323459
-IF_WEIGHT = 0.10
-AE_WEIGHT = 0.90
 
 PAGES = ["SOC Overview", "Alerts", "Alert Investigation", "Analytics", "Model & System Evidence"]
 if "nav_page" not in st.session_state:
@@ -125,8 +123,6 @@ else:
     max_alerts = 200
 
 st.sidebar.markdown("---")
-st.sidebar.caption("Only IF-v2 is used as the production Isolation Forest.")
-st.sidebar.caption("Dashboard is read-only -- no model, scaler, or output file is ever modified.")
 
 
 # ---------------------------------------------------------------------------
@@ -384,9 +380,9 @@ def page_alert_investigation() -> None:
         f"Block <b>{selected_block}</b> was classified as <b>{fusion_prediction}</b> "
         f"(SOC severity <b>{severity}</b>). Its fusion score of <b>{fusion_score:.4f}</b> is "
         f"{relation} the production threshold of <b>{PRODUCTION_THRESHOLD}</b>.",
-        f"The Autoencoder identified deviation from learned normal behaviour (score {ae_score:.4f}, "
-        f"90% weight), while IF-v2 identified statistical isolation in the selected 19-feature space "
-        f"(score {if_score:.4f}, 10% weight).",
+        f"The Autoencoder identified deviation from learned normal behaviour (score {ae_score:.4f}), "
+        f"while IF-v2 identified statistical isolation in its selected feature space "
+        f"(score {if_score:.4f}).",
     ]
     if top_ae_feature:
         narrative.append(f"The Autoencoder's strongest evidence came from <b>{top_ae_feature}</b>.")
@@ -403,10 +399,6 @@ def page_alert_investigation() -> None:
     ev_cols[0].metric("Autoencoder Score", f"{ae_score:.6g}")
     ev_cols[1].metric("IF-v2 Score", f"{if_score:.6f}")
     ev_cols[2].metric("Fusion Score", f"{fusion_score:.6f}")
-    st.plotly_chart(
-        charts.fusion_composition_bar(if_score, ae_score, IF_WEIGHT, AE_WEIGHT, fusion_score),
-        use_container_width=True,
-    )
 
     # -- D. SHAP Explainability -----------------------------------------------
     st.markdown('<div class="section-header">D. SHAP Explainability</div>', unsafe_allow_html=True)
@@ -426,7 +418,7 @@ def page_alert_investigation() -> None:
         )
         return df.reindex(df["SHAP Contribution"].abs().sort_values(ascending=False).index).head(10).reset_index(drop=True)
 
-    shap_tabs = st.tabs(["Autoencoder (58 features)", "IF-v2 (19 selected features)"])
+    shap_tabs = st.tabs(["Autoencoder", "IF-v2"])
     with shap_tabs[0]:
         if ae_explanation is not None:
             ae_labels = [friendly_feature_label(f, template_map) for f in ae_explanation["feature_names"]]
@@ -475,13 +467,20 @@ def page_alert_investigation() -> None:
 
     # -- F. Behavioural Features -----------------------------------------------
     st.markdown('<div class="section-header">F. Behavioural Features</div>', unsafe_allow_html=True)
-    behavioural_columns = [
-        "total_log_events", "unique_template_count", "unique_component_count",
-        "time_duration_seconds", "event_density", "warn_count", "error_count", "info_count",
-    ]
-    feat_cols = st.columns(4)
-    for i, col_name in enumerate(behavioural_columns):
-        if col_name in row:
+    NON_FEATURE_COLS = {
+        "BlockId", "Label", "severity", "fusion_score", "fusion_prediction",
+        "autoencoder_anomaly_score", "autoencoder_prediction", "autoencoder_reconstruction_error",
+        "autoencoder_calibrated_score", "if_v2_anomaly_score", "if_v2_prediction",
+        "if_v2_calibrated_score",
+    }
+    if ae_explanation is not None:
+        feature_cols = [c for c in ae_explanation["feature_names"] if c in row.index]
+    else:
+        feature_cols = [c for c in row.index if c not in NON_FEATURE_COLS]
+
+    if feature_cols:
+        feat_cols = st.columns(4)
+        for i, col_name in enumerate(feature_cols):
             value = row[col_name]
             display = f"{value:,.2f}" if isinstance(value, float) else str(value)
             feat_cols[i % 4].markdown(
@@ -489,20 +488,14 @@ def page_alert_investigation() -> None:
                 f'<div class="kpi-value">{display}</div></div>',
                 unsafe_allow_html=True,
             )
-    with st.expander("View all features"):
-        non_feature_cols = {
-            "BlockId", "Label", "severity", "fusion_score", "fusion_prediction",
-            "autoencoder_anomaly_score", "autoencoder_prediction", "autoencoder_reconstruction_error",
-            "if_v2_anomaly_score", "if_v2_prediction", "if_v2_calibrated_score",
-        }
-        if ae_explanation is not None:
-            all_feature_cols = list(ae_explanation["feature_names"])
-        else:
-            all_feature_cols = [c for c in row.index if c not in non_feature_cols]
+    else:
+        st.info("No behavioural feature values are available for this block.")
+
+    with st.expander("View all features as a table"):
         all_df = pd.DataFrame(
             {
-                "Feature": [friendly_feature_label(c, template_map) for c in all_feature_cols],
-                "Value": [float(row[c]) if c in row and pd.notna(row[c]) else None for c in all_feature_cols],
+                "Feature": [friendly_feature_label(c, template_map) for c in feature_cols],
+                "Value": [float(row[c]) if c in row and pd.notna(row[c]) else None for c in feature_cols],
             }
         )
         st.dataframe(all_df, use_container_width=True, hide_index=True, height=320)
@@ -617,41 +610,12 @@ def page_model_system_evidence() -> None:
     ifv2_meta = dl.load_ifv2_model_metadata()
 
     st.markdown('<div class="section-header">Architecture</div>', unsafe_allow_html=True)
-    pipeline_cols = st.columns(5)
+    pipeline_cols = st.columns(4)
     steps = [
-        "HDFS Logs \u2192 Drain3", "Autoencoder\n58 features", "IF-v2\n19 features",
-        "Validation\nCalibration", "10% IF-v2 + 90% AE\n\u2192 Fusion \u2192 Severity \u2192 SHAP",
+        "IF + AE", "Fusion", "Severity", "SHAP",
     ]
     for col, step in zip(pipeline_cols, steps):
         col.markdown(f'<div class="pipeline-step">{step}</div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="section-header">Configuration</div>', unsafe_allow_html=True)
-    conf_cols = st.columns(4)
-    conf_cols[0].markdown(
-        '<div class="kpi-card"><div class="kpi-label">Autoencoder Features</div>'
-        '<div class="kpi-value">58</div></div>',
-        unsafe_allow_html=True,
-    )
-    conf_cols[1].markdown(
-        f'<div class="kpi-card"><div class="kpi-label">IF-v2 Features</div>'
-        f'<div class="kpi-value">{len(ifv2_meta["selected_features"]) if ifv2_meta else 19}</div></div>',
-        unsafe_allow_html=True,
-    )
-    if_w = fusion_config.get("if_weight", IF_WEIGHT) if fusion_config else IF_WEIGHT
-    ae_w = fusion_config.get("ae_weight", AE_WEIGHT) if fusion_config else AE_WEIGHT
-    conf_cols[2].markdown(
-        f'<div class="kpi-card"><div class="kpi-label">Fusion Weights</div>'
-        f'<div class="kpi-value">IF={if_w:.2f} \u00b7 AE={ae_w:.2f}</div></div>',
-        unsafe_allow_html=True,
-    )
-    thr = fusion_config.get("threshold", PRODUCTION_THRESHOLD) if fusion_config else PRODUCTION_THRESHOLD
-    conf_cols[3].markdown(
-        f'<div class="kpi-card"><div class="kpi-label">Fusion Threshold</div>'
-        f'<div class="kpi-value">{thr}</div></div>',
-        unsafe_allow_html=True,
-    )
-    if not fusion_config:
-        missing_file_banner(f"Fusion config not found (<code>{dl.FUSION_CONFIG_FILE.name}</code>); showing approved defaults.")
 
     st.markdown('<div class="section-header">Performance (test set, ablation view)</div>', unsafe_allow_html=True)
     ae_eval = dl.load_autoencoder_evaluation()
@@ -759,13 +723,8 @@ def page_model_system_evidence() -> None:
             language="text",
         )
         if ifv2_meta and ifv2_meta.get("selected_features"):
-            st.markdown("**IF-v2 Selected Features (19)**")
+            st.markdown("**IF-v2 Selected Features**")
             st.write(", ".join(ifv2_meta["selected_features"]))
-        st.markdown("**Fusion Configuration**")
-        if fusion_config:
-            st.json(fusion_config)
-        else:
-            st.code(f"IF-v2 weight = {IF_WEIGHT}\nAE weight    = {AE_WEIGHT}\nThreshold    = {PRODUCTION_THRESHOLD}", language="text")
         st.markdown("**Raw Pipeline Reports**")
         st.write("Log Collection:", dl.load_log_collection_report())
         st.write("Parsing:", dl.load_parsing_report())
