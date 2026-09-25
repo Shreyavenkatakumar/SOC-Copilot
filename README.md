@@ -1,185 +1,152 @@
 # SOC Copilot — Phase I
 
-AI-Powered Security Log Anomaly Detection Engine.
+AI-powered HDFS log anomaly detection and SOC analyst investigation dashboard.
 
-## Status
+## Current status
 
-Module 1 (Project Setup and Log Collection) implemented.
-Module 2 (Drain3 Log Parsing) implemented.
-Module 3 (Feature Extraction + Isolation Forest Detection + Evaluation) implemented.
+This repository contains the final Phase I architecture:
 
-## Setup
+```text
+HDFS logs → Log Collection → Drain3 → 58 features
+                         ├→ Autoencoder (58)
+                         └→ IF-v2 (19)
+                              ↓
+Validation-only isotonic calibration
+                              ↓
+0.10 IF-v2 + 0.90 Autoencoder score fusion
+                              ↓
+Production threshold = 0.323459
+                              ↓
+Normal / Anomaly → Severity → SHAP → Analyst dashboard
+```
+
+The legacy `models/isolation_forest_model.py` is retained only as reference/rollback code. It is not imported or executed by the production pipeline.
+
+## Dataset
+
+- 11,175,629 HDFS log lines
+- 575,061 labelled HDFS blocks
+- 558,223 Normal blocks
+- 16,838 Anomaly blocks
+- 48 Drain3 event templates
+- 58 engineered feature columns
+
+Detector training is Normal-only. The final split is:
+
+| Split | Blocks | Normal | Anomaly |
+|---|---:|---:|---:|
+| Training | 446,578 | 446,578 | 0 |
+| Validation | 64,241 | 55,822 | 8,419 |
+| Test | 64,242 | 55,823 | 8,419 |
+
+Block IDs are checked for overlap across splits.
+
+## Models
+
+### Autoencoder
+
+All 58 features are used. Architecture:
+
+```text
+58 → 32 → 16 → 8 → 16 → 32 → 58
+```
+
+The Autoencoder is trained using Normal-only training blocks and uses reconstruction error as anomaly evidence.
+
+### Isolation Forest v2
+
+IF-v2 is the only Isolation Forest used in production.
+
+```text
+n_estimators = 200
+max_samples = 0.5
+max_features = 1.0
+bootstrap = False
+random_state = 42
+n_jobs = -1
+```
+
+It uses 19 selected features. Feature selection and the IF-v2 scaler are derived from training data only; the decision threshold is selected on validation data only.
+
+### Fusion
+
+The production fusion configuration is frozen:
+
+```text
+fusion_score = 0.10 × calibrated_IFv2_score
+             + 0.90 × calibrated_AE_score
+```
+
+```text
+fusion_score >= 0.323459 → Anomaly
+fusion_score <  0.323459 → Normal
+```
+
+Both calibrators are fitted on validation data only. The production path does not perform a new fusion grid search.
+
+## Explainability
+
+The dashboard provides SHAP explanations for the actual production scoring functions:
+
+- Autoencoder reconstruction-error evidence over all 58 features.
+- IF-v2 anomaly-score evidence over the persisted 19 features.
+- Positive SHAP contribution means stronger anomaly evidence.
+- Negative SHAP contribution means weaker anomaly evidence.
+
+SHAP is model evidence for analyst investigation; it is not treated as proof of root cause.
+
+## Dashboard
+
+Run:
+
+```bash
+python -m streamlit run dashboard/app.py
+```
+
+Five primary pages are provided:
+
+1. SOC Overview
+2. Alerts
+3. Alert Investigation
+4. Analytics
+5. Model & System Evidence
+
+The Alert Investigation page connects an alert to its fusion score, model evidence, SHAP contributors, behavioural features, event templates, Block Activity Timeline, and supporting parsed log evidence.
+
+The dashboard is read-only with respect to trained ML artifacts: it does not retrain models, refit scalers/calibrators, change fusion weights, or modify production predictions.
+
+## Reproduction
 
 ```bash
 python -m venv venv
-source venv/bin/activate
+# Windows: venv\Scripts\activate
+# Linux/macOS: source venv/bin/activate
 pip install -r requirements.txt
-```
-
-Place the LogHub HDFS dataset files into `data/raw/`:
-
-```
-data/raw/HDFS.log
-data/raw/anomaly_label.csv
-data/raw/HDFS.log_templates.csv        # validation only
-data/raw/Event_traces.csv              # validation only
-data/raw/Event_occurrence_matrix.csv   # validation only
-data/raw/HDFS.npz                      # validation only
-```
-
-## Run
-
-```bash
 python main.py
 ```
 
-This executes, in order: Module 1 (log collection) → Module 2 (Drain3
-parsing) → Module 3a (feature extraction) → Module 3b (Isolation Forest
-training + scoring) → Module 3c (evaluation).
+The main pipeline executes Log Collection → Drain3 parsing → Feature Extraction → IF-v2 → Autoencoder → Autoencoder evaluation → production fusion → Fusion evaluation.
 
-### Run only Module 1
+## Production vs reference code
 
-```bash
-python -m data.log_collector
-```
+Production path:
 
-### Run only Module 2
+- `main.py`
+- `models/autoencoder_model.py`
+- `models/isolation_forest_model_v2.py`
+- `models/fusion_engine.py`
+- `evaluation/evaluate_autoencoder.py`
+- `evaluation/evaluate_fusion.py`
+- `dashboard/`
 
-```bash
-python -m parsers.parser
-```
+Reference/historical material may remain in the repository for traceability. In particular, `models/isolation_forest_model.py` is legacy/reference code and is not part of the production decision path.
 
-This streams `data/raw/HDFS.log`, extracts the `<Date> <Time> <Pid>
-<Level> <Component>: <Content>` header from every line, mines log
-templates from the `Content` field with Drain3, and writes:
+## Publication consistency
 
-- `data/processed/parsed_logs.csv` — one row per raw line, with
-  `LineId, Date, Time, Timestamp, Pid, Level, Component, Content,
-  BlockId, EventId, EventTemplate, ParameterList, RawLine`
-- `outputs/models/drain3_state.bin` — trained Drain3 tree snapshot,
-  reloaded automatically on the next run instead of retraining
-- `outputs/reports/parsing_report.json` — total lines processed, unique
-  template count, most frequent templates, and parsing success rate
+Source code and output artifacts must correspond to the same final revision when the repository is cited by a paper. Older evaluation reports or experimental reports should not be presented as the final production result.
 
-On the full LogHub HDFS dataset (11,175,629 lines) this mines 48 unique
-templates with a 100% parsing success rate in roughly 8–9 minutes on a
-single CPU core.
+Before publication, regenerate the final prediction/evaluation artifacts from the final source revision and commit them together. This prevents the source tree, dashboard, metrics, and manuscript from describing different project versions.
 
-### Run only Module 3 (requires `data/processed/parsed_logs.csv` from Module 2)
+## Limitations
 
-Run all three parts together:
-
-```bash
-python -m training.train_isolation_forest
-```
-
-Or run each part individually:
-
-```bash
-python -m features.feature_extractor          # Part A
-python -m models.isolation_forest_model        # Part B
-python -m evaluation.evaluate_isolation_forest # Part C
-```
-
-**Part A — Feature Extraction** (`features/feature_extractor.py`)
-Aggregates `parsed_logs.csv` by `BlockId` into one feature vector per
-block, then min-max scales every numeric column to `[0, 1]`:
-
-- `total_log_events`, `event_sequence_length` — log lines in the block
-- `unique_template_count` — distinct Drain3 EventIds seen
-- `tmpl_E<n>_count` — one column per EventId (template frequency
-  distribution), zero-filled for templates absent from a block
-- `time_duration_seconds` — span between the block's first and last
-  timestamp
-- `event_density` — `total_log_events / (time_duration_seconds + ε)`
-- `unique_component_count` — distinct Hadoop components involved
-- `info_count`, `warn_count`, `error_count`, `other_count` — log level
-  counts
-
-Outputs:
-- `data/processed/features.csv` — final scaled feature matrix
-- `outputs/models/feature_scaler.joblib` — fitted `MinMaxScaler` (reused
-  for consistent scaling at inference time / by later modules)
-- `outputs/reports/feature_extraction_report.json`
-
-On the full dataset: 575,061 blocks × 58 feature columns.
-
-**Part B — Isolation Forest** (`models/isolation_forest_model.py`)
-Trains `sklearn.ensemble.IsolationForest` on an 80% split of
-ground-truth **Normal**-only blocks (semi-supervised), then scores
-every block in `features.csv`.
-
-Outputs:
-- `outputs/models/isolation_forest_model.joblib`
-- `outputs/reports/isolation_forest_predictions.csv` — `BlockId,
-  iforest_raw_score, iforest_anomaly_score (0-1, higher = more
-  anomalous), iforest_prediction (Normal/Anomaly)`
-
-**Part C — Evaluation** (`evaluation/evaluate_isolation_forest.py`)
-Joins predictions against `anomaly_label.csv` and computes Accuracy,
-Precision, Recall, F1, ROC-AUC, and the confusion matrix.
-
-Output: `outputs/reports/isolation_forest_evaluation.json`
-
-Measured result on the full HDFS dataset (575,061 blocks, contamination
-left at scikit-learn's `"auto"` default):
-
-| Metric | Value |
-|---|---|
-| Accuracy | 0.765 |
-| Precision | 0.092 |
-| Recall | 0.789 |
-| F1 | 0.164 |
-| ROC-AUC | 0.882 |
-
-ROC-AUC (0.88) shows the anomaly score itself ranks anomalous blocks
-well above normal ones. Precision is low at the default decision
-threshold because Isolation Forest's `"auto"` contamination flags far
-more blocks than the ~2.9% true anomaly rate in this dataset — this is
-expected from a single unsupervised detector and is exactly what the
-fusion engine (Isolation Forest + Autoencoder) and severity scoring in
-later modules are designed to correct.
-
-## Project Structure
-
-```
-SOC_Copilot_Phase1/
-├── data/
-│   ├── raw/                        # place LogHub HDFS files here
-│   ├── processed/
-│   │   ├── parsed_logs.csv         # Module 2 output
-│   │   └── features.csv            # Module 3a output
-│   └── log_collector.py            # Module 1
-├── parsers/
-│   ├── drain3_config.ini           # Drain3 tuning + masking rules
-│   ├── log_header_parser.py        # HDFS header/content/BlockId extraction
-│   └── parser.py                   # Module 2
-├── features/
-│   └── feature_extractor.py        # Module 3a
-├── models/
-│   └── isolation_forest_model.py   # Module 3b
-├── training/
-│   └── train_isolation_forest.py   # Module 3 orchestrator (3a + 3b + 3c)
-├── evaluation/
-│   └── evaluate_isolation_forest.py # Module 3c
-├── dashboard/                      # Module 10
-├── utils/
-│   ├── config.py
-│   ├── logger.py
-│   └── exceptions.py
-├── outputs/
-│   ├── logs/
-│   ├── reports/
-│   │   ├── log_collection_report.json
-│   │   ├── parsing_report.json
-│   │   ├── feature_extraction_report.json
-│   │   ├── isolation_forest_predictions.csv
-│   │   └── isolation_forest_evaluation.json
-│   ├── models/
-│   │   ├── drain3_state.bin           # trained Drain3 tree
-│   │   ├── feature_scaler.joblib      # fitted MinMaxScaler
-│   │   └── isolation_forest_model.joblib
-│   └── figures/
-├── main.py
-└── requirements.txt
-```
+This is a Phase I HDFS block-level anomaly detection and investigation system. It does not claim full attack-chain reconstruction, automated root-cause determination, or production SIEM/ticketing integration.
