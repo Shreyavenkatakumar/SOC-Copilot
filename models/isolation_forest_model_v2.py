@@ -1,33 +1,27 @@
 """
-Isolation Forest v2 -- ISOLATED validation stage.
+Isolation Forest v2 — IF-v2 validation and production execution path.
 
-This module implements the audit-driven, evidence-based Isolation Forest
-configuration as a self-contained experiment. It is NOT wired into
-production: it does not modify, import from, or get imported by
-models/isolation_forest_model.py, models/autoencoder_model.py,
-models/fusion_engine.py, any severity-scoring or dashboard code, or
-main.py. Its only job is to prove IF-v2 is correct, reproducible, and
-methodologically sound before any integration decision is made.
+This module implements the audit-driven IF-v2 configuration. It supports
+two execution modes:
 
-Changes implemented (per the prior audit), and nothing else:
-  1. IF params: n_estimators=200, max_samples=0.5, max_features=1.0,
-     bootstrap=False, random_state=42, n_jobs=-1
-  2. Feature subset restricted to the 19-feature decorrelated set
-     (IF-specific; the Autoencoder's 58-feature input is untouched --
-     this module never modifies features/feature_extractor.py)
-  3. Trained on ALL 446,578 training-Normal blocks (no restriction)
-  4. No anomaly labels, and no HDFS.log_templates.csv / Event_traces.csv /
-     Event_occurrence_matrix.csv, are ever used as model input features
-  5. Leakage fix: the production feature_scaler.joblib was fit on ALL
-     575,061 blocks (train+validation+test) BEFORE any split -- a real,
-     if minor, leakage source for a from-scratch validation stage. This
-     module inverts that global scaling to recover raw feature values,
-     then fits a NEW MinMaxScaler using ONLY the 19-feature training
-     population, and applies it to validation/test via transform() only.
-  6. Threshold is F1-optimal on VALIDATION ONLY (precision_recall_curve),
-     never sklearn's contamination-based predict() cutoff.
-  7. Calibration (isotonic regression) is fit on VALIDATION ONLY.
-  8. Test data is touched exactly once, at the very end, for final metrics.
+1. Standalone validation mode:
+   run(include_original_if_comparison=True) may execute the legacy
+   Isolation Forest on the identical split for historical comparison.
+
+2. Production mode:
+   run(include_original_if_comparison=False) executes IF-v2 only.
+   This is the mode used by main.py and the production fusion path.
+   The legacy Isolation Forest is not part of the production decision.
+
+IF-v2 properties:
+  - n_estimators=200, max_samples=0.5, max_features=1.0,
+    bootstrap=False, random_state=42, n_jobs=-1
+  - 19-feature decorrelated subset
+  - trained on the 446,578 Normal training blocks
+  - feature selection and local scaling fit on training data only
+  - validation-only F1 threshold selection
+  - validation-only isotonic calibration
+  - untouched test split used for final evaluation
 """
 
 import json
